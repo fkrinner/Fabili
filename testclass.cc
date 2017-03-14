@@ -21,7 +21,7 @@ evalType testclass::eval(const std::vector<double>& parameters) const {
 	}
 	evalType retVal;
 	retVal.value     = _C;
-	retVal.gradient = Eigen::VectorXd::Zero(_dim);
+	retVal.gradient  = Eigen::VectorXd::Zero(_dim);
 	retVal.hessian   = Eigen::MatrixXd::Zero(_dim, _dim);
 	for (size_t i = 0; i < _dim; ++i) {
 		retVal.value += _B[i] * parameters[i];

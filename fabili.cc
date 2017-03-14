@@ -1,8 +1,27 @@
 #include"fabili.h"
 
-fabili::fabili(std::shared_ptr<fabiliFunction> function) : _numericalLimit(1.e-8), _stepSize(0.), _function(function) {};
+fabili::fabili(std::shared_ptr<fabiliFunction> function) : _dim(function->dim()), _numericalLimit(1.e-8), _stepSize(0.), _function(function) {};
 
-std::vector<double> fabili::estimate(const std::vector<double>& point) const {
+std::pair<bool, std::vector<double> > fabili::minimize(const std::vector<double>& startingPoint, int callLimit) const {
+	int count = 0;
+	std::vector<double> point(startingPoint);
+	while (true) {
+		std::pair<bool, std::vector<double> > estim = estimate(point);
+		if (estim.first) {
+			std::cout << "Minimization finished after " << count << " function calls." << std::endl;
+			return estim;
+		}
+		++count;
+		point = estim.second;
+		if (count > callLimit && callLimit > 0) {
+			break;
+		}
+	}
+	std::cout << "Minimization unsuccessful, call limit of " << callLimit << " function calls exceeded" << std::endl;
+	return std::pair<bool, std::vector<double> >(false, point);
+} 
+
+std::pair<bool, std::vector<double> > fabili::estimate(const std::vector<double>& point) const {
 	const size_t dim = point.size();
 
 	Eigen::VectorXd P(dim);
@@ -11,6 +30,10 @@ std::vector<double> fabili::estimate(const std::vector<double>& point) const {
 	}
 
 	evalType evalPoint = _function->eval(point);
+
+	if (stoppingCriterion(evalPoint)) {
+		return std::pair<bool, std::vector<double> >(true, point);
+	}
 
 	Eigen::EigenSolver<Eigen::MatrixXd> eigenSolver(evalPoint.hessian);
 	Eigen::MatrixXcd V = eigenSolver.eigenvectors().transpose();
@@ -34,7 +57,7 @@ std::vector<double> fabili::estimate(const std::vector<double>& point) const {
 			retVal[i] = val.real();
 		}
 	}
-	return retVal;	
+	return std::pair<bool, std::vector<double> >(false, retVal);	
 }
 
 double fabili::estimate1D(const std::complex<double>& DD, const std::complex<double>& D, const std::complex<double>& x) const {
@@ -88,5 +111,15 @@ bool fabili::isZero(double val) const {
 	return false;
 }
 
-
+bool fabili::stoppingCriterion(const evalType& point) const {
+	double absGrad = 0.;
+	for (size_t i = 0; i < _dim; ++i) {
+		absGrad += pow(point.gradient(i),2);
+	}
+	absGrad = pow(absGrad,.5);
+	if (absGrad < _numericalLimit) {
+		return true;
+	}
+	return false;
+}
 

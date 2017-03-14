@@ -21,7 +21,7 @@ int main() {
 	fabili fab(func);
 
 	std::vector<double> point = {2.,2.,1.};
-	std::vector<double> estim = fab.estimate(point);
+	std::vector<double> estim = fab.minimize(point, 100).second;
 	evalType atPoint = func->eval(point);
 	evalType atEstim = func->eval(estim);
 
