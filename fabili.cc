@@ -41,7 +41,6 @@ std::pair<bool, std::vector<double> > fabili::estimate(const std::vector<double>
 	Eigen::VectorXcd Drot = V*evalPoint.gradient;
 	Eigen::VectorXcd Prot = V*P;
 	Eigen::VectorXd estimateRot(dim);
-
 	for (size_t i = 0; i < dim; ++i) {
 		estimateRot(i) = estimate1D(eigenSolver.eigenvalues()[i], Drot(i), Prot(i));
 	}
@@ -79,6 +78,7 @@ double fabili::estimate1D(const std::complex<double>& DD, const std::complex<dou
 		double A   = DDf/2;
 		double B   = Df - DDf * X;
 		if (isZero(DDf)) {
+			std::cout << "Zero handler for " << A << std::endl;
 			return handleZeroEigenvalue(A, B, X);
 		} else if (DDf > 0.) {
 			return handlePositiveEigenvalue(A, B, X);
@@ -112,7 +112,7 @@ std::cout << "Negative handler called" << std::endl;
 }
 
 bool fabili::isZero(double val) const {
-	if (abs(val) < _numericalLimit) {
+	if (fabs(val) < _numericalLimit) {
 		return true;
 	}
 	return false;

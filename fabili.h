@@ -25,6 +25,7 @@ class fabili {
 
 		bool isZero(double val) const;
 		bool stoppingCriterion(const evalType& point) const;
+		bool setStepSize(double value) {_stepSize = value; return true;}
 
 	protected:
 		size_t                          _dim;
