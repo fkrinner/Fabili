@@ -13,11 +13,9 @@ struct evalType {
 
 class fabiliFunction {
 	public:
-		fabiliFunction(): _dim(0){};
+		fabiliFunction(){};
 		virtual evalType eval(const std::vector<double>& parameters) const = 0;
 
-		size_t dim() const {return _dim;}
-	protected:
-		size_t _dim;
+		virtual size_t dim() const {return 0;}
 };
 #endif//FABILI_FUNCTION

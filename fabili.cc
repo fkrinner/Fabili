@@ -87,6 +87,7 @@ double fabili::estimate1D(const std::complex<double>& DD, const std::complex<dou
 }
 
 double fabili::handleZeroEigenvalue(double A, double B, double X) const {
+std::cout << "Zero handler called" << std::endl;
 	if (isZero(B)) {
 		return X;
 	} else if (B < 0.) {
@@ -100,8 +101,14 @@ double fabili::handlePositiveEigenvalue(double A, double B, double X) const {
 }
 
 double fabili::handleNegativeEigenvalue(double A, double B, double X) const {
+std::cout << "Negative handler called" << std::endl;
 	double BB = 4*A*X + B;
-	return BB/(2*A); // AA = -A
+// f(x) = Ax^2 + Bx + C with A < 0
+// Predict for negative curvature, as for a parabula with same gradient but opposite sign curvature:
+// g(x) = f(x), g'(x) = f'(x), g''(x) = -f''(x) for x = X
+// g(x) = A'x^2 + B'x + C' => Prediction = -B'/(2A') 
+// A' = -A; B' = 4AX + B; C' is irrelevant for the prediction
+	return BB/(2*A);
 }
 
 bool fabili::isZero(double val) const {
@@ -117,6 +124,7 @@ bool fabili::stoppingCriterion(const evalType& point) const {
 		absGrad += pow(point.gradient(i),2);
 	}
 	absGrad = pow(absGrad,.5);
+	std::cout << "|f'(x)| = " << absGrad << " (f(x) = " << point.value << ")" << std::endl;
 	if (absGrad < _numericalLimit) {
 		return true;
 	}
