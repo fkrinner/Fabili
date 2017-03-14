@@ -1,6 +1,7 @@
 #include"fabili.h"
 #include"testclass.h"
 #include"fabiliFunction.h"
+#include"testDerivatives.h"
 #include<memory>
 #include<vector>
 
@@ -24,6 +25,9 @@ int main() {
 	evalType atPoint = func->eval(point);
 	evalType atEstim = func->eval(estim);
 
+	testDerivatives(func, point);
+
+	return 0;
 
 	for (size_t i = 0; i < dim; ++i) {
 		std::cout << i << " " << estim[i] << " " << atEstim.gradient(i) << std::endl;
