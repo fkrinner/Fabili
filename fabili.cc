@@ -1,9 +1,9 @@
 #include"fabili.h"
 
-fabili::fabili(std::shared_ptr<fabiliFunction> function) : _dim(function->dim()), _numericalLimit(1.e-8), _stepSize(0.), _function(function) {};
+fabili::fabili(std::shared_ptr<fabiliFunction> function) : _dim(function->dim()), _nStepWorse(20), _numericalLimit(1.e-8), _stepSize(0.), _lastEval(1./0.), _lastParameters(), _function(function) {};
 
-std::pair<bool, std::vector<double> > fabili::minimize(const std::vector<double>& startingPoint, int callLimit) const {
-	int count = 0;
+std::pair<bool, std::vector<double> > fabili::minimize(const std::vector<double>& startingPoint, size_t callLimit) const {
+	size_t count = 0;
 	std::vector<double> point(startingPoint);
 	while (true) {
 		std::pair<bool, std::vector<double> > estim = estimate(point);
@@ -13,7 +13,7 @@ std::pair<bool, std::vector<double> > fabili::minimize(const std::vector<double>
 		}
 		++count;
 		point = estim.second;
-		if (count > callLimit && callLimit > 0) {
+		if (count > callLimit && callLimit) {
 			break;
 		}
 	}
@@ -33,6 +33,9 @@ std::pair<bool, std::vector<double> > fabili::estimate(const std::vector<double>
 
 	if (stoppingCriterion(evalPoint)) {
 		return std::pair<bool, std::vector<double> >(true, point);
+	}
+	if (evalPoint.value > _lastEval) {
+		return std::pair<bool, std::vector<double> >(false, handleWorsePoint(point, evalPoint));
 	}
 
 	Eigen::EigenSolver<Eigen::MatrixXd> eigenSolver(evalPoint.hessian);
@@ -56,6 +59,8 @@ std::pair<bool, std::vector<double> > fabili::estimate(const std::vector<double>
 			retVal[i] = val.real();
 		}
 	}
+	_lastEval       = evalPoint.value;
+	_lastParameters = point;
 	return std::pair<bool, std::vector<double> >(false, retVal);	
 }
 
@@ -87,7 +92,7 @@ double fabili::estimate1D(const std::complex<double>& DD, const std::complex<dou
 }
 
 double fabili::handleZeroEigenvalue(double A, double B, double X) const {
-std::cout << "Zero handler called" << std::endl;
+	std::cout << "Zero handler called" << std::endl;
 	if (isZero(B)) {
 		return X;
 	} else if (B < 0.) {
@@ -101,7 +106,8 @@ double fabili::handlePositiveEigenvalue(double A, double B, double X) const {
 }
 
 double fabili::handleNegativeEigenvalue(double A, double B, double X) const {
-std::cout << "Negative handler called" << std::endl;
+	return X;
+//	std::cout << "Negative handler called" << std::endl;
 	double BB = 4*A*X + B;
 // f(x) = Ax^2 + Bx + C with A < 0
 // Predict for negative curvature, as for a parabula with same gradient but opposite sign curvature:
@@ -109,6 +115,34 @@ std::cout << "Negative handler called" << std::endl;
 // g(x) = A'x^2 + B'x + C' => Prediction = -B'/(2A') 
 // A' = -A; B' = 4AX + B; C' is irrelevant for the prediction
 	return BB/(2*A);
+}
+
+std::vector<double> fabili::handleWorsePoint(const std::vector<double>& point, const evalType& evalPoint) const {
+	std::cout << "Worse point handler called" << std::endl;
+	double bestPoint = 1./0.;
+	double bestX     = 0.;
+	for (int i = -_nStepWorse+1; i <(int) _nStepWorse; ++i) { // Also go to negative direction to be sure 
+		std::vector<double> par(_dim);
+		double x = ((double) i)/_nStepWorse;
+		for (size_t p = 0; p < _dim; ++p) {
+			par[p] = _lastParameters[p] * (1.-x) + point[p] * x;
+		}
+		double evl = _function->scalarEval(par);
+	//	std::cout << "Worse point handler: eval at x = " << x << ": " << evl << std::endl;
+		if (evl < bestPoint) {
+			bestPoint = evl;
+			bestX     = x;
+		}
+	}
+	if (bestX == 0.) {
+		std::cout << "bestI is zero, use x = 1/2" << std::endl;
+		bestX = .5;
+	}
+
+	std::vector<double> retVal(_dim);
+	for (size_t i = 0; i < _dim; ++i) {
+		retVal[i] = bestX * point[i] + (1.-bestX)* _lastParameters[i]; 	}
+	return retVal;
 }
 
 bool fabili::isZero(double val) const {

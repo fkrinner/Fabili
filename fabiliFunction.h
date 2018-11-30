@@ -14,6 +14,7 @@ struct evalType {
 class fabiliFunction {
 	public:
 		fabiliFunction(){};
+		virtual double scalarEval(const std::vector<double>& parameters) const = 0;
 		virtual evalType eval(const std::vector<double>& parameters) const = 0;
 
 		virtual size_t dim() const {return 0;}

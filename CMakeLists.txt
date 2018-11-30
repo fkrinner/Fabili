@@ -1,9 +1,9 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
 PROJECT(fabili)
 
-#SET(CMAKE_CXX_COMPILER "/opt/rh/devtoolset-3/root/usr/bin/g++")
+SET(CMAKE_CXX_COMPILER "/opt/rh/devtoolset-7/root/usr/bin/g++")
 SET(CMAKE_MODULE_PATH  ${PROJECT_SOURCE_DIR} )
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11  -Wextra -Werror -O3")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11  -Wextra -Werror -O3 -Wno-ignored-attributes -Wno-deprecated-declarations")
 
 
 SET( INCLUDE_DIRS 

@@ -26,6 +26,10 @@ testclass::testclass(double c, std::vector<double> b, std::vector<std::vector<do
 	}
 }
 
+double testclass::scalarEval(const std::vector<double>& parameters) const {
+	return testclass::eval(parameters).value;
+}
+
 evalType testclass::eval(const std::vector<double>& parameters) const {
 	if (parameters.size() != _dim) {
 		std::cout << "Wrong size of parameters" << std::endl;

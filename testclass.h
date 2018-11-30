@@ -6,6 +6,7 @@ class testclass : public fabiliFunction {
 	public:
 		testclass(double c, std::vector<double> b, std::vector<std::vector<double> > a);
 
+		double scalarEval(const std::vector<double>& parameters) const override;
 		evalType eval(const std::vector<double>& parameters) const override;
 
 		size_t dim() const override {return _dim;}
